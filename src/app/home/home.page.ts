@@ -13,10 +13,11 @@ import ImageryLayer from '@arcgis/core/layers/ImageryLayer';
 })
 export class HomePage implements OnInit {
   mapView: MapView | any;
-  userLocationGraphic : Graphic | any;
+  userLocationGraphic: Graphic | any;
   selectedBasemap: string = "topo-vector";
+  lastKnownPosition: Point | null = null;
 
-  constructor () {}
+  constructor() {}
 
   async ngOnInit() {
     this.initializeMap();
@@ -42,7 +43,7 @@ export class HomePage implements OnInit {
     // Initial location update to center the map on the user's location
     this.updateUserLocationOnMap();
 
-    // Update the user's location periodically
+    // Update the user's location periodically but without recentering the map
     setInterval(this.updateUserLocationOnMap.bind(this), 10000);
   }
 
@@ -53,29 +54,15 @@ export class HomePage implements OnInit {
   }
 
   addWeatherPointMarkers() {
-    // Create a point with the provided coordinates
-    let customPoint1 = new Point({
-      longitude: -110.6765, // Longitude for Medicine Hat
-      latitude: 50.0417     // Latitude for Medicine Hat
-    });
+    // Define points and markers
+    const points = [
+      { longitude: -110.6765, latitude: 50.0417 }, // Medicine Hat
+      { longitude: -99.32598442282034, latitude: 38.87886033734784 }, // Updated Point
+      { longitude: -104.6189, latitude: 50.4452 }, // Regina
+      { longitude: -108.5007, latitude: 45.7833 } // Billings
+    ];
 
-    let customPoint2 = new Point({
-      longitude: -99.32598442282034, // Updated Longitude for the new point
-      latitude: 38.87886033734784    // Updated Latitude for the new point
-    });
-
-    let customPoint3 = new Point({
-      longitude: -104.6189, // Longitude for Regina
-      latitude: 50.4452    // Latitude for Regina
-    });
-    
-    let customPoint4 = new Point({
-      longitude: -108.5007, // Longitude for Billings
-      latitude: 45.7833     // Latitude for Billings
-    });
-
-    // Create a symbol for the points
-    let markerSymbol = new SimpleMarkerSymbol({
+    const markerSymbol = new SimpleMarkerSymbol({
       color: [255, 0, 0], // Red color
       size: '12px', // Size of the marker
       outline: {
@@ -84,62 +71,60 @@ export class HomePage implements OnInit {
       }
     });
 
-    // Create graphics and add them to the mapView
-    let customGraphic1 = new Graphic({
-      geometry: customPoint1,
-      symbol: markerSymbol
-    });
-
-    let customGraphic2 = new Graphic({
-      geometry: customPoint2,
-      symbol: markerSymbol
-    });
-
-    let customGraphic3 = new Graphic({
-      geometry: customPoint3,
-      symbol: markerSymbol
-    });
-
-    let customGraphic4 = new Graphic({
-      geometry: customPoint4,
-      symbol: markerSymbol
-    });
-
-    // Remove the Kansas point
     this.mapView.graphics.removeAll();
 
-    // Add the new graphics
-    this.mapView.graphics.add(customGraphic1);
-    this.mapView.graphics.add(customGraphic2);
-    this.mapView.graphics.add(customGraphic3);
-    this.mapView.graphics.add(customGraphic4);
+    points.forEach(point => {
+      const customPoint = new Point({
+        longitude: point.longitude,
+        latitude: point.latitude
+      });
+
+      const customGraphic = new Graphic({
+        geometry: customPoint,
+        symbol: markerSymbol
+      });
+
+      this.mapView.graphics.add(customGraphic);
+    });
   }
 
   async getLocationService(): Promise<number[]> {
     return new Promise((resolve, reject) => {
       navigator.geolocation.getCurrentPosition((resp) => {
         resolve([resp.coords.latitude, resp.coords.longitude]);
-      });
+      }, (err) => reject(err));
     });
   }
 
   async updateUserLocationOnMap() {
-    let latLng = await this.getLocationService();
-    let geom = new Point({ latitude: latLng[0], longitude: latLng[1] });
+    const [latitude, longitude] = await this.getLocationService();
+    const newPoint = new Point({ latitude, longitude });
 
     // Update the user's location graphic
     if (this.userLocationGraphic) {
-      this.userLocationGraphic.geometry = geom;
+      this.userLocationGraphic.geometry = newPoint;
     } else {
       this.userLocationGraphic = new Graphic({
         symbol: new SimpleMarkerSymbol(),
-        geometry: geom,
+        geometry: newPoint,
       });
       this.mapView.graphics.add(this.userLocationGraphic);
     }
 
-    // Center the map on the user's location
-    this.mapView.center = geom;
+    // Only recenter if the new position is significantly different
+    if (!this.lastKnownPosition || this.isSignificantlyDifferent(newPoint, this.lastKnownPosition)) {
+      this.mapView.center = newPoint;
+      this.lastKnownPosition = newPoint;
+    }
+  }
+
+  isSignificantlyDifferent(point1: Point, point2: Point): boolean {
+    const threshold = 0.01; // Define a threshold for significant movement
+    const distance = Math.sqrt(
+      Math.pow(point1.latitude - point2.latitude, 2) +
+      Math.pow(point1.longitude - point2.longitude, 2)
+    );
+    return distance > threshold;
   }
 }
 
