@@ -31,8 +31,7 @@ export class HomePage implements OnInit {
     this.mapView = new MapView({
       container: "container",
       map: map,
-      zoom: 10, // Adjust the zoom level as needed
-      // Do not set center here, we will set it later based on the user's location
+      zoom: 10,
     });
 
     let weatherServiceFL = new ImageryLayer({ url: WeatherServiceURL });
