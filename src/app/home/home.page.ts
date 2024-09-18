@@ -30,8 +30,8 @@ export class HomePage implements OnInit {
     this.mapView = new MapView({
       container: "container",
       map: map,
-      zoom: 6, // Zoom level adjusted for better view of Kansas
-      center: [-97.5, 39.0] // Center map over Kansas
+      zoom: 10, // Adjust the zoom level as needed
+      // Do not set center here, we will set it later based on the user's location
     });
 
     let weatherServiceFL = new ImageryLayer({ url: WeatherServiceURL });
@@ -39,6 +39,10 @@ export class HomePage implements OnInit {
 
     this.addWeatherPointMarkers();
 
+    // Initial location update to center the map on the user's location
+    this.updateUserLocationOnMap();
+
+    // Update the user's location periodically
     setInterval(this.updateUserLocationOnMap.bind(this), 10000);
   }
 
@@ -63,7 +67,7 @@ export class HomePage implements OnInit {
     let customPoint3 = new Point({
       longitude: -104.6189, // Longitude for Regina
       latitude: 50.4452    // Latitude for Regina
-      });
+    });
     
     let customPoint4 = new Point({
       longitude: -108.5007, // Longitude for Billings
@@ -122,15 +126,20 @@ export class HomePage implements OnInit {
   async updateUserLocationOnMap() {
     let latLng = await this.getLocationService();
     let geom = new Point({ latitude: latLng[0], longitude: latLng[1] });
+
+    // Update the user's location graphic
     if (this.userLocationGraphic) {
       this.userLocationGraphic.geometry = geom;
     } else {
       this.userLocationGraphic = new Graphic({
-          symbol: new SimpleMarkerSymbol(),
-          geometry: geom,
+        symbol: new SimpleMarkerSymbol(),
+        geometry: geom,
       });
       this.mapView.graphics.add(this.userLocationGraphic);
     }
+
+    // Center the map on the user's location
+    this.mapView.center = geom;
   }
 }
 
