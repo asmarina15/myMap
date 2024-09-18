@@ -15,7 +15,7 @@ export class HomePage implements OnInit {
   mapView: MapView | any;
   userLocationGraphic: Graphic | any;
   selectedBasemap: string = "topo-vector";
-  lastKnownPosition: Point | null = null;
+  lastKnownPosition: Point | null = null; // Posisi pengguna yang diketahui terakhir
 
   constructor() {}
 
@@ -51,7 +51,7 @@ export class HomePage implements OnInit {
   }
 
   addWeatherPointMarkers() {
-    // Define points and markers
+    // Menentukan titik dan penanda
     const points = [
       { longitude: -110.6765, latitude: 50.0417 }, // Medicine Hat
       { longitude: -99.32598442282034, latitude: 38.87886033734784 }, // Kansas
@@ -97,7 +97,7 @@ export class HomePage implements OnInit {
     const [latitude, longitude] = await this.getLocationService();
     const newPoint = new Point({ latitude, longitude });
 
-    // Update the user's location graphic
+    // Memperbarui grafik lokasi pengguna
     if (this.userLocationGraphic) {
       this.userLocationGraphic.geometry = newPoint;
     } else {
@@ -108,7 +108,7 @@ export class HomePage implements OnInit {
       this.mapView.graphics.add(this.userLocationGraphic);
     }
 
-    // Only recenter if the new position is significantly different
+    // Hanya recenter jika posisi baru berbeda secara signifikan
     if (!this.lastKnownPosition || this.isSignificantlyDifferent(newPoint, this.lastKnownPosition)) {
       this.mapView.center = newPoint;
       this.lastKnownPosition = newPoint;
@@ -116,7 +116,7 @@ export class HomePage implements OnInit {
   }
 
   isSignificantlyDifferent(point1: Point, point2: Point): boolean {
-    const threshold = 0.01; // Define a threshold for significant movement
+    const threshold = 0.01; 
     const distance = Math.sqrt(
       Math.pow(point1.latitude - point2.latitude, 2) +
       Math.pow(point1.longitude - point2.longitude, 2)
