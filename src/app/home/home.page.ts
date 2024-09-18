@@ -39,10 +39,8 @@ export class HomePage implements OnInit {
 
     this.addWeatherPointMarkers();
 
-    // Initial location update to center the map on the user's location
     this.updateUserLocationOnMap();
 
-    // Update the user's location periodically but without recentering the map
     setInterval(this.updateUserLocationOnMap.bind(this), 10000);
   }
 
@@ -56,7 +54,7 @@ export class HomePage implements OnInit {
     // Define points and markers
     const points = [
       { longitude: -110.6765, latitude: 50.0417 }, // Medicine Hat
-      { longitude: -99.32598442282034, latitude: 38.87886033734784 }, // Updated Point
+      { longitude: -99.32598442282034, latitude: 38.87886033734784 }, // Kansas
       { longitude: -104.6189, latitude: 50.4452 }, // Regina
       { longitude: -108.5007, latitude: 45.7833 } // Billings
     ];
