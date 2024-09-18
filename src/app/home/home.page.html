@@ -13,6 +13,14 @@
     </ion-toolbar>
   </ion-header>
 
+  <ion-item>
+    <ion-select [(ngModel)]="selectedBasemap" (ionChange)="changeBasemap()">
+      <ion-select-option value="topo-vector">Topographic</ion-select-option>
+      <ion-select-option value="streets-vector">Streets</ion-select-option>
+      <ion-select-option value="satellite">Satellite</ion-select-option>
+    </ion-select>
+  </ion-item>
+
   <div id="container">
     <!--<strong>Ready to create an app?</strong>
     <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>-->
